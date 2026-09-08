@@ -1,9 +1,8 @@
 import os
 import requests
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL = "nvidia/nemotron-3.5-lightning:free"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent"
 
 BUSINESS_CONTEXT = (
     "You are a helpful assistant embedded on the Nexus website, a business platform "
@@ -14,29 +13,29 @@ BUSINESS_CONTEXT = (
 
 
 def get_ai_reply(user_message, conversation_history):
-    if not OPENROUTER_API_KEY:
+    if not GEMINI_API_KEY:
         return "Our chat assistant is not fully set up yet. Please use the contact form and we will get back to you."
 
-    messages = [{"role": "system", "content": BUSINESS_CONTEXT}]
-    messages += conversation_history
-    messages.append({"role": "user", "content": user_message})
-
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-    }
+    contents = []
+    for item in conversation_history:
+        role = "model" if item["role"] == "assistant" else "user"
+        contents.append({"role": role, "parts": [{"text": item["content"]}]})
+    contents.append({"role": "user", "parts": [{"text": user_message}]})
 
     payload = {
-        "model": OPENROUTER_MODEL,
-        "messages": messages,
-        "max_tokens": 300,
+        "system_instruction": {"parts": [{"text": BUSINESS_CONTEXT}]},
+        "contents": contents,
     }
 
-    response = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=30)
+    response = requests.post(
+        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+        json=payload,
+        timeout=30,
+    )
     data = response.json()
 
-    if "choices" not in data:
-        print(f"OpenRouter API error (status {response.status_code}): {data}")
+    if "candidates" not in data:
+        print(f"Gemini API error (status {response.status_code}): {data}")
         return "Sorry, something went wrong. Please try again in a moment."
 
-    return data["choices"][0]["message"]["content"]
+    return data["candidates"][0]["content"]["parts"][0]["text"]

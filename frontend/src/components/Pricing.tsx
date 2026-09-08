@@ -120,8 +120,8 @@ export default function Pricing() {
                 }`}
               >
                 {plan.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-noir-950 text-primary-300 text-xs font-bold shadow-lg animate-bounce-subtle border border-primary-500/30">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                    <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-gradient-to-r from-primary-300 to-primary-500 text-noir-950 text-xs font-bold shadow-lg shadow-primary-500/40 whitespace-nowrap">
                       <Sparkles className="w-3.5 h-3.5" />
                       MOST POPULAR
                     </div>

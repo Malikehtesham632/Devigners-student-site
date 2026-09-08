@@ -17,7 +17,11 @@ app = FastAPI(title="Nexus Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://nexus-brand-frontened.vercel.app"],
+    allow_origins=[
+        "https://nexus-brand-frontened.vercel.app",
+        "https://nexus-brand-git-master-devigners1.vercel.app",
+        "https://nexus-brand-o2zhzb7kd-devigners1.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

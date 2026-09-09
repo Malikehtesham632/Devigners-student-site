@@ -53,7 +53,7 @@ export default function JoinFormModal({ onClose }: { onClose: () => void }) {
 
         <div className="bg-red-600 px-6 py-7 text-white sm:px-8">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-red-100">Admissions</p>
-          <h2 id="join-form-title" className="mt-2 text-3xl font-black">Join Devigners</h2>
+          <h2 id="join-form-title" className="mt-2 text-3xl font-black">Join Us</h2>
           <p className="mt-2 max-w-md text-sm leading-6 text-red-50">Tell us a little about yourself and how you would like to learn. Our admissions team will guide you from there.</p>
         </div>
 

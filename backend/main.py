@@ -9,6 +9,10 @@ import schemas
 import auth
 import notifications
 import chat
+import os
+import urllib.error
+import urllib.request
+import json
 from database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
@@ -85,6 +89,48 @@ def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 
+def _send_to_google_sheet(name: str, email: str, program: str, class_mode: str) -> None:
+    webhook_url = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
+    webhook_secret = os.getenv("GOOGLE_SHEETS_WEBHOOK_SECRET", "").strip()
+    if not webhook_url or not webhook_secret:
+        raise RuntimeError("Google Sheets integration is not configured")
+
+    payload = json.dumps({
+        "secret": webhook_secret,
+        "name": name,
+        "email": email,
+        "program": program,
+        "class_mode": class_mode,
+    }).encode("utf-8")
+    request = urllib.request.Request(
+        webhook_url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            body = response.read().decode("utf-8")
+            if response.status < 200 or response.status >= 300:
+                raise RuntimeError(f"Google Sheets returned HTTP {response.status}")
+            result = json.loads(body) if body else {}
+            if result.get("ok") is not True:
+                raise RuntimeError(result.get("error", "Google Sheets rejected the submission"))
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Google Sheets request failed: {error}") from error
+
+
+def _parse_admission_details(message: str) -> tuple[str, str]:
+    program = ""
+    class_mode = ""
+    for line in message.splitlines():
+        if line.lower().startswith("program of interest:"):
+            program = line.split(":", 1)[1].strip()
+        elif line.lower().startswith("preferred class format:"):
+            class_mode = line.split(":", 1)[1].strip()
+    return program, class_mode
+
+
 @app.post("/contact", response_model=schemas.ContactFormOut)
 def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(get_db)):
     submission = models.ContactSubmission(
@@ -97,12 +143,29 @@ def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(
     db.commit()
     db.refresh(submission)
 
-    try:
-        notifications.send_contact_notification(
-            form_data.name, form_data.email, form_data.message, form_data.form_type
-        )
-    except Exception as error:
-        print(f"Failed to send email notification: {error}")
+    if form_data.form_type == "admissions":
+        program, class_mode = _parse_admission_details(form_data.message)
+        try:
+            _send_to_google_sheet(form_data.name, form_data.email, program, class_mode)
+            notifications.send_admissions_notifications(
+                form_data.name, form_data.email, form_data.message
+            )
+        except Exception as error:
+            print(f"Admissions delivery failed: {error}")
+            raise HTTPException(
+                status_code=502,
+                detail=(
+                    "Your request was saved, but we could not complete the admissions notification. "
+                    "Please try submitting again or contact Devigners directly."
+                ),
+            ) from error
+    else:
+        try:
+            notifications.send_contact_notification(
+                form_data.name, form_data.email, form_data.message, form_data.form_type
+            )
+        except Exception as error:
+            print(f"Failed to send email notification: {error}")
 
     return submission
 

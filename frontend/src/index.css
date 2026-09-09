@@ -17,6 +17,7 @@
   .eyebrow-dark { @apply text-red-400; }
   .section-title { @apply mt-3 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl; }
   .section-copy { @apply mt-4 max-w-2xl text-base leading-8 text-slate-600; }
+  .glass-card { @apply border border-white/10 bg-white/5 backdrop-blur-sm; }
 }
 
 * { box-sizing: border-box; }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
+import JoinFormModal from '@/components/JoinFormModal';
 import { getMe } from '@/lib/api';
 
 const links = [
@@ -16,6 +17,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
+  const [joinOpen, setJoinOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
 
   const refreshUser = () => {
@@ -76,7 +78,7 @@ export default function Navbar() {
             ) : (
               <>
                 <button onClick={() => setAuthMode('signin')} className="text-sm font-bold text-slate-600 hover:text-red-600">Sign in</button>
-                <button onClick={() => setAuthMode('signup')} className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-red-600/20 hover:bg-red-700">Join Devigners</button>
+                <button onClick={() => setJoinOpen(true)} className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-red-600/20 hover:bg-red-700">Join Us</button>
               </>
             )}
           </div>
@@ -99,7 +101,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <button onClick={() => { setAuthMode('signin'); setOpen(false); }} className="px-4 py-3 text-left text-sm font-bold text-slate-700">Sign in</button>
-                  <button onClick={() => { setAuthMode('signup'); setOpen(false); }} className="rounded-xl bg-red-600 px-4 py-3 text-sm font-extrabold text-white">Join Devigners</button>
+                  <button onClick={() => { setJoinOpen(true); setOpen(false); }} className="rounded-xl bg-red-600 px-4 py-3 text-sm font-extrabold text-white">Join Us</button>
                 </>
               )}
             </div>
@@ -107,6 +109,7 @@ export default function Navbar() {
         )}
       </header>
       {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onLoginSuccess={refreshUser} />}
+      {joinOpen && <JoinFormModal onClose={() => setJoinOpen(false)} />}
     </>
   );
 }

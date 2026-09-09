@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Gift } from 'lucide-react';
 import { signup, login } from '@/lib/api';
 
 type AuthModalProps = {
@@ -26,7 +26,7 @@ export default function AuthModal({ mode, onClose, onLoginSuccess }: AuthModalPr
     try {
       if (isSignup) {
         await signup(name, email, password);
-        setSuccess('Account created! You can now sign in.');
+        setSuccess('Account created! Your $60 welcome credits are ready in your wallet.');
         setIsSignup(false);
       } else {
         const result = await login(email, password);
@@ -56,9 +56,18 @@ export default function AuthModal({ mode, onClose, onLoginSuccess }: AuthModalPr
         <h2 className="text-2xl font-bold text-white mb-1">
           {isSignup ? 'Create your account' : 'Welcome back'}
         </h2>
-        <p className="text-noir-400 text-sm mb-6">
+        <p className="text-noir-400 text-sm mb-4">
           {isSignup ? 'Start your free trial today' : 'Sign in to your account'}
         </p>
+
+        {isSignup && (
+          <div className="mb-5 flex items-center gap-2 rounded-xl border border-primary-500/20 bg-primary-500/5 px-4 py-3">
+            <Gift className="w-4 h-4 text-primary-300 flex-shrink-0" />
+            <p className="text-xs text-noir-200">
+              Create an account and receive <span className="font-bold text-primary-300">$60 in site credits</span>.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {isSignup && (
@@ -79,6 +88,7 @@ export default function AuthModal({ mode, onClose, onLoginSuccess }: AuthModalPr
             required
             className="px-4 py-3 rounded-xl bg-noir-800 border border-white/10 text-white placeholder:text-noir-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
+
           <input
             type="password"
             placeholder="Password"
@@ -89,21 +99,25 @@ export default function AuthModal({ mode, onClose, onLoginSuccess }: AuthModalPr
           />
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          {success && <p className="text-green-600 text-sm">{success}</p>}
+          {success && <p className="text-green-500 text-sm">{success}</p>}
 
           <button
             type="submit"
             disabled={loading}
             className="mt-2 px-6 py-3 bg-gradient-to-r from-primary-300 to-primary-500 text-noir-950 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-500/20 transition-all disabled:opacity-50"
           >
-            {loading ? 'Please wait...' : isSignup ? 'Sign up' : 'Sign in'}
+            {loading ? 'Please wait...' : isSignup ? 'Sign up & claim $60' : 'Sign in'}
           </button>
         </form>
 
         <p className="text-center text-sm text-noir-400 mt-6">
           {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
-            onClick={() => setIsSignup(!isSignup)}
+            onClick={() => {
+              setError('');
+              setSuccess('');
+              setIsSignup(!isSignup);
+            }}
             className="text-primary-400 font-semibold hover:underline"
           >
             {isSignup ? 'Sign in' : 'Sign up'}

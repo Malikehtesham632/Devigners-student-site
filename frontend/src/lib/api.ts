@@ -42,6 +42,28 @@ export async function getMe(token: string) {
   return response.json();
 }
 
+export type Wallet = {
+  id: number;
+  user_id: number;
+  balance: number;
+  currency: string;
+  created_at: string;
+  updated_at?: string | null;
+};
+
+export async function getWallet(token: string): Promise<Wallet> {
+  const response = await fetch(`${API_BASE_URL}/wallet`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail || 'Unable to load wallet');
+  }
+
+  return response.json();
+}
+
 export type ChatHistoryItem = { role: string; content: string };
 
 export async function sendChatMessage(message: string, history: ChatHistoryItem[]) {

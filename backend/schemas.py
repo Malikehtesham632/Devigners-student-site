@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from decimal import Decimal
 
 
 class UserSignup(BaseModel):
@@ -26,6 +27,18 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class WalletOut(BaseModel):
+    id: int
+    user_id: int
+    balance: Decimal
+    currency: str
+    created_at: datetime
+    updated_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
 
 
 class ContactFormIn(BaseModel):

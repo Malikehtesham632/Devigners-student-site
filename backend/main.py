@@ -62,6 +62,16 @@ def signup(user_data: schemas.UserSignup, db: Session = Depends(get_db)):
         hashed_password=auth.hash_password(user_data.password),
     )
     db.add(new_user)
+    db.flush()
+
+    # One-time, site-only welcome credit. No payment/withdrawal is involved.
+    wallet = models.Wallet(
+        user_id=new_user.id,
+        balance=60.00,
+        currency="USD",
+    )
+    db.add(wallet)
+
     db.commit()
     db.refresh(new_user)
     return new_user
@@ -80,6 +90,28 @@ def login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
 @app.get("/me", response_model=schemas.UserOut)
 def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+
+@app.get("/wallet", response_model=schemas.WalletOut)
+def get_wallet(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    wallet = db.query(models.Wallet).filter(models.Wallet.user_id == current_user.id).first()
+
+    if wallet is None:
+        # Backward compatibility for accounts created before the wallet feature.
+        # This creates the wallet only when the old account first opens Wallet.
+        wallet = models.Wallet(
+            user_id=current_user.id,
+            balance=60.00,
+            currency="USD",
+        )
+        db.add(wallet)
+        db.commit()
+        db.refresh(wallet)
+
+    return wallet
 
 
 @app.post("/contact", response_model=schemas.ContactFormOut)

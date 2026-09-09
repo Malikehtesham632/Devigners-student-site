@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Gem, User, LogOut } from 'lucide-react';
+import { Menu, X, Gem, User, LogOut, WalletCards } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { getMe } from '@/lib/api';
 
@@ -39,6 +39,11 @@ export default function Navbar() {
 
   useEffect(() => {
     checkLoginStatus();
+
+    const openSignup = () => setAuthMode('signup');
+    window.addEventListener('open-signup', openSignup);
+
+    return () => window.removeEventListener('open-signup', openSignup);
   }, []);
 
   useEffect(() => {
@@ -49,7 +54,7 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-10 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-noir-950/85 backdrop-blur-lg shadow-lg shadow-black/40 border-b border-primary-500/10'
           : 'bg-transparent'
@@ -81,6 +86,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {userName ? (
               <>
+                <Link
+                  to="/wallet"
+                  className="flex items-center gap-2 text-sm font-semibold text-primary-300 hover:text-primary-200 transition-colors"
+                >
+                  <WalletCards className="w-4 h-4" />
+                  Wallet
+                </Link>
                 <Link
                   to="/profile"
                   className="flex items-center gap-2 text-sm font-semibold text-noir-200 hover:text-primary-300 transition-colors"
@@ -139,6 +151,14 @@ export default function Navbar() {
               <div className="border-t border-white/10 my-2" />
               {userName ? (
                 <>
+                  <Link
+                    to="/wallet"
+                    onClick={() => setMobileOpen(false)}
+                    className="px-4 py-3 text-sm font-semibold text-primary-300 flex items-center gap-2 hover:text-primary-200"
+                  >
+                    <WalletCards className="w-4 h-4" />
+                    Wallet
+                  </Link>
                   <Link
                     to="/profile"
                     onClick={() => setMobileOpen(false)}

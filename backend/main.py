@@ -19,6 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://nexus-brand-frontened.vercel.app",
+        "https://nexus-brand-oall.vercel.app",
         "https://nexus-brand-git-master-devigners1.vercel.app",
         "https://nexus-brand-o2zhzb7kd-devigners1.vercel.app",
     ],

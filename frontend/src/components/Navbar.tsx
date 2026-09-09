@@ -1,214 +1,112 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, Gem, User, LogOut, WalletCards } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { getMe } from '@/lib/api';
 
-const navLinks = [
-  { label: 'Features', href: '/#features' },
-  { label: 'Solutions', href: '/#solutions' },
-  { label: 'Testimonials', href: '/#testimonials' },
-  { label: 'Pricing', href: '/#pricing' },
+const links = [
+  { label: 'Home', to: '/' },
+  { label: 'CUBE', to: '/cube' },
+  { label: 'COHORT', to: '/cohort' },
+  { label: 'About', to: '/about' },
+  { label: 'Contact', to: '/contact' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
 
-  function checkLoginStatus() {
+  const refreshUser = () => {
     const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!token) return setUserName(null);
+    getMe(token).then((user) => setUserName(user.name)).catch(() => {
+      localStorage.removeItem('access_token');
       setUserName(null);
-      return;
-    }
-    getMe(token)
-      .then((user) => setUserName(user.name))
-      .catch(() => {
-        localStorage.removeItem('access_token');
-        setUserName(null);
-      });
-  }
+    });
+  };
 
-  function handleSignOut() {
+  useEffect(() => {
+    refreshUser();
+    const onOpenSignup = () => setAuthMode('signup');
+    window.addEventListener('open-signup', onOpenSignup);
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('open-signup', onOpenSignup);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
+  const signOut = () => {
     localStorage.removeItem('access_token');
     setUserName(null);
-    setMobileOpen(false);
-  }
-
-  useEffect(() => {
-    checkLoginStatus();
-
-    const openSignup = () => setAuthMode('signup');
-    window.addEventListener('open-signup', openSignup);
-
-    return () => window.removeEventListener('open-signup', openSignup);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    setOpen(false);
+  };
 
   return (
-    <header
-      className={`fixed top-10 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-noir-950/85 backdrop-blur-lg shadow-lg shadow-black/40 border-b border-primary-500/10'
-          : 'bg-transparent'
-      }`}
-    >
-      <nav className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18 py-4">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-300 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20 transition-transform group-hover:scale-105">
-              <Gem className="w-5 h-5 text-noir-950" strokeWidth={2.5} />
+    <>
+      <header className={`fixed inset-x-0 top-0 z-50 transition-all ${scrolled ? 'border-b border-red-100 bg-white/95 shadow-sm backdrop-blur' : 'bg-white/90 backdrop-blur-sm'}`}>
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 lg:px-8">
+          <Link to="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
+            <img src="/devigners-logo.gif" alt="Devigners" className="h-11 w-11 rounded-xl object-cover" />
+            <div>
+              <div className="text-lg font-extrabold tracking-tight text-slate-950">DEVIGNERS</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-red-600">Learning Institute</div>
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-white">
-              Nexus
-            </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-noir-200 hover:text-primary-300 hover:bg-white/5 transition-all"
-              >
+          <div className="hidden items-center gap-1 md:flex">
+            {links.map((link) => (
+              <NavLink key={link.to} to={link.to} end={link.to === '/'} className={({ isActive }) => `rounded-full px-4 py-2 text-sm font-bold transition ${isActive ? 'bg-red-50 text-red-600' : 'text-slate-600 hover:bg-slate-50 hover:text-red-600'}`}>
                 {link.label}
-              </Link>
+              </NavLink>
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden items-center gap-3 md:flex">
             {userName ? (
               <>
-                <Link
-                  to="/wallet"
-                  className="flex items-center gap-2 text-sm font-semibold text-primary-300 hover:text-primary-200 transition-colors"
-                >
-                  <WalletCards className="w-4 h-4" />
-                  Wallet
+                <Link to="/profile" className="flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:border-red-200 hover:text-red-600">
+                  <User className="h-4 w-4" /> {userName}
                 </Link>
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 text-sm font-semibold text-noir-200 hover:text-primary-300 transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Hi, {userName}
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-noir-200 hover:text-primary-300 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign out
-                </button>
+                <button onClick={signOut} className="rounded-full p-2 text-slate-500 hover:bg-red-50 hover:text-red-600" aria-label="Sign out"><LogOut className="h-4 w-4" /></button>
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setAuthMode('signin')}
-                  className="text-sm font-semibold text-noir-200 hover:text-primary-300 transition-colors"
-                >
-                  Sign in
-                </button>
-                <button
-                  onClick={() => setAuthMode('signup')}
-                  className="text-sm font-semibold text-noir-950 bg-gradient-to-r from-primary-300 to-primary-500 px-5 py-2.5 rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5 transition-all"
-                >
-                  Get Started
-                </button>
+                <button onClick={() => setAuthMode('signin')} className="text-sm font-bold text-slate-600 hover:text-red-600">Sign in</button>
+                <button onClick={() => setAuthMode('signup')} className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-red-600/20 hover:bg-red-700">Join Devigners</button>
               </>
             )}
           </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-lg text-white"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button className="rounded-xl p-2 text-slate-800 md:hidden" onClick={() => setOpen((v) => !v)} aria-label="Toggle navigation">
+            {open ? <X /> : <Menu />}
           </button>
-        </div>
+        </nav>
 
-        {mobileOpen && (
-          <div className="md:hidden bg-noir-900 rounded-2xl shadow-xl border border-primary-500/10 mt-2 mb-4 p-4 animate-fade-in-down">
+        {open && (
+          <div className="border-t border-slate-100 bg-white px-5 pb-5 pt-3 md:hidden">
             <div className="flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 text-sm font-medium text-noir-200 hover:text-primary-300 hover:bg-white/5 rounded-lg transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="border-t border-white/10 my-2" />
+              {links.map((link) => <NavLink key={link.to} to={link.to} end={link.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => `rounded-xl px-4 py-3 text-sm font-bold ${isActive ? 'bg-red-50 text-red-600' : 'text-slate-700'}`}>{link.label}</NavLink>)}
+              <div className="my-2 h-px bg-slate-100" />
               {userName ? (
                 <>
-                  <Link
-                    to="/wallet"
-                    onClick={() => setMobileOpen(false)}
-                    className="px-4 py-3 text-sm font-semibold text-primary-300 flex items-center gap-2 hover:text-primary-200"
-                  >
-                    <WalletCards className="w-4 h-4" />
-                    Wallet
-                  </Link>
-                  <Link
-                    to="/profile"
-                    onClick={() => setMobileOpen(false)}
-                    className="px-4 py-2 text-sm font-semibold text-noir-200 flex items-center gap-2 hover:text-primary-300"
-                  >
-                    <User className="w-4 h-4" />
-                    Hi, {userName}
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="px-4 py-3 text-sm font-semibold text-noir-200 hover:text-primary-300 rounded-lg transition-colors text-left flex items-center gap-2"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign out
-                  </button>
+                  <Link to="/profile" onClick={() => setOpen(false)} className="px-4 py-3 text-sm font-bold text-slate-700">My profile</Link>
+                  <button onClick={signOut} className="flex items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-600"><LogOut className="h-4 w-4" /> Sign out</button>
                 </>
               ) : (
                 <>
-                  <button
-                    onClick={() => {
-                      setAuthMode('signin');
-                      setMobileOpen(false);
-                    }}
-                    className="px-4 py-3 text-sm font-semibold text-noir-200 hover:text-primary-300 rounded-lg transition-colors text-left"
-                  >
-                    Sign in
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthMode('signup');
-                      setMobileOpen(false);
-                    }}
-                    className="px-4 py-3 text-sm font-semibold text-noir-950 bg-gradient-to-r from-primary-300 to-primary-500 rounded-xl text-center"
-                  >
-                    Get Started
-                  </button>
+                  <button onClick={() => { setAuthMode('signin'); setOpen(false); }} className="px-4 py-3 text-left text-sm font-bold text-slate-700">Sign in</button>
+                  <button onClick={() => { setAuthMode('signup'); setOpen(false); }} className="rounded-xl bg-red-600 px-4 py-3 text-sm font-extrabold text-white">Join Devigners</button>
                 </>
               )}
             </div>
           </div>
         )}
-      </nav>
-
-      {authMode && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthMode(null)}
-          onLoginSuccess={checkLoginStatus}
-        />
-      )}
-    </header>
+      </header>
+      {authMode && <AuthModal mode={authMode} onClose={() => setAuthMode(null)} onLoginSuccess={refreshUser} />}
+    </>
   );
 }

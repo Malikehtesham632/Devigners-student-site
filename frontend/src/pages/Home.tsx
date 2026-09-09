@@ -1,21 +1,25 @@
-import Hero from '@/components/Hero';
-import Stats from '@/components/Stats';
-import Features from '@/components/Features';
-import Solutions from '@/components/Solutions';
-import Testimonials from '@/components/Testimonials';
-import Pricing from '@/components/Pricing';
-import CTA from '@/components/CTA';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Check, Code2, Computer, GraduationCap, Sparkles } from 'lucide-react';
+
+const benefits = ['Practical, mentor-led learning', 'Clear progression from basics to development', 'Project-based skills for real-world confidence'];
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <Stats />
-      <Features />
-      <Solutions />
-      <Testimonials />
-      <Pricing />
-      <CTA />
-    </>
-  );
+  return <div>
+    <section className="relative overflow-hidden bg-white"><div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-red-100 blur-3xl" /><div className="absolute -right-40 top-10 h-[28rem] w-[28rem] rounded-full bg-red-50 blur-3xl" />
+      <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-36 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pb-28">
+        <div><div className="mb-5 inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-red-600"><Sparkles className="h-4 w-4" /> Technology education that starts where you are</div><h1 className="max-w-3xl text-5xl font-black leading-[1.02] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">Learn the basics.<br /><span className="text-red-600">Build the future.</span></h1><p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">Devigners helps students grow through two focused programs: <strong>CUBE</strong> for computer fundamentals and <strong>COHORT</strong> for full-stack development.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link to="/cube" className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 font-extrabold text-white shadow-xl shadow-red-600/20 hover:bg-red-700">Explore CUBE <ArrowRight className="h-4 w-4" /></Link><Link to="/cohort" className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-200 px-6 py-3.5 font-extrabold text-slate-800 hover:border-red-200 hover:text-red-600">Explore COHORT</Link></div></div>
+        <div className="relative"><div className="absolute -inset-5 rounded-[2rem] bg-red-600/10 blur-2xl" /><div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-6 shadow-2xl"><div className="flex items-center justify-between border-b border-white/10 pb-5"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-red-400">Devigners pathway</p><h2 className="mt-1 text-2xl font-extrabold text-white">Your learning journey</h2></div><GraduationCap className="h-9 w-9 text-red-400" /></div><div className="space-y-4 py-6"><div className="rounded-2xl border border-red-400/30 bg-red-600/10 p-5"><div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-xl bg-red-600 text-white"><Computer /></div><div><p className="text-xs font-extrabold uppercase tracking-wider text-red-300">01 · CUBE</p><p className="text-lg font-extrabold text-white">Computer Fundamentals</p></div></div><p className="mt-3 text-sm leading-6 text-slate-300">Start from zero and gain confidence with essential computer and digital skills.</p></div><div className="ml-8 h-6 border-l-2 border-dashed border-red-500/50" /><div className="rounded-2xl border border-white/10 bg-white/5 p-5"><div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-xl bg-white text-red-600"><Code2 /></div><div><p className="text-xs font-extrabold uppercase tracking-wider text-red-300">02 · COHORT</p><p className="text-lg font-extrabold text-white">Full-Stack Development</p></div></div><p className="mt-3 text-sm leading-6 text-slate-300">Move into professional development with modern frontend, backend, databases and projects.</p></div></div></div></div>
+      </div>
+    </section>
+
+    <section className="border-y border-slate-100 bg-slate-50"><div className="mx-auto grid max-w-7xl gap-5 px-5 py-10 md:grid-cols-3 lg:px-8">{benefits.map((b) => <div key={b} className="flex items-center gap-3 font-bold text-slate-700"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-red-100 text-red-600"><Check className="h-4 w-4" /></span>{b}</div>)}</div></section>
+
+    <section className="bg-white py-20"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="max-w-2xl"><p className="eyebrow">Two programs. One pathway.</p><h2 className="section-title">Choose the right starting point.</h2><p className="section-copy">We keep the journey simple: master your foundations first, then turn that foundation into development skills.</p></div><div className="mt-10 grid gap-6 lg:grid-cols-2"><ProgramCard tone="red" icon={<Computer />} label="CUBE" title="Computer Fundamentals" description="For students who are completely new to computers and want a strong, practical foundation." points={['Computer basics and digital literacy', 'Windows, files, folders and internet essentials', 'Everyday productivity and online safety']} href="/cube" /><ProgramCard tone="dark" icon={<Code2 />} label="COHORT" title="Full-Stack Development" description="For advanced students ready to learn how modern web applications are designed, built and deployed." points={['Frontend, backend and databases', 'APIs, Git, authentication and deployment', 'Real-world projects and development workflow']} href="/cohort" /></div></div></section>
+
+    <section className="bg-red-600 py-16 text-white"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 px-5 lg:flex-row lg:items-center lg:px-8"><div><p className="text-sm font-extrabold uppercase tracking-[0.18em] text-red-100">Ready to begin?</p><h2 className="mt-2 text-3xl font-black sm:text-4xl">Start with the program that fits you.</h2></div><Link to="/contact" className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-extrabold text-red-600 hover:bg-red-50">Talk to admissions <ArrowRight className="h-4 w-4" /></Link></div></section>
+  </div>;
+}
+
+function ProgramCard({ tone, icon, label, title, description, points, href }: { tone: 'red' | 'dark'; icon: React.ReactNode; label: string; title: string; description: string; points: string[]; href: string }) {
+  return <Link to={href} className={`group rounded-3xl p-7 transition hover:-translate-y-1 hover:shadow-2xl ${tone === 'red' ? 'bg-red-50 ring-1 ring-red-100' : 'bg-slate-950 text-white'}`}><div className="flex items-start justify-between"><div className={`grid h-14 w-14 place-items-center rounded-2xl ${tone === 'red' ? 'bg-red-600 text-white' : 'bg-white text-red-600'}`}>{icon}</div><span className={`rounded-full px-3 py-1 text-xs font-extrabold ${tone === 'red' ? 'bg-white text-red-600' : 'bg-red-600/15 text-red-300'}`}>{label}</span></div><h3 className="mt-7 text-3xl font-black">{title}</h3><p className={`mt-3 leading-7 ${tone === 'red' ? 'text-slate-600' : 'text-slate-300'}`}>{description}</p><ul className="mt-6 space-y-3">{points.map((p) => <li key={p} className="flex gap-3 text-sm font-semibold"><Check className={`mt-0.5 h-4 w-4 shrink-0 ${tone === 'red' ? 'text-red-600' : 'text-red-400'}`} />{p}</li>)}</ul><div className={`mt-7 inline-flex items-center gap-2 text-sm font-extrabold ${tone === 'red' ? 'text-red-600' : 'text-white'}`}>View program <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></div></Link>;
 }

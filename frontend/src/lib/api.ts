@@ -1,4 +1,11 @@
-const API_BASE_URL = 'https://nexus-brand-production.up.railway.app';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://nexus-brand-production.up.railway.app').replace(/\/$/, '');
+
+async function parseResponse(response: Response, fallback: string) {
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json') ? await response.json().catch(() => null) : null;
+  if (!response.ok) throw new Error(data?.detail || fallback);
+  return data;
+}
 
 export async function signup(name: string, email: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/signup`, {
@@ -6,13 +13,7 @@ export async function signup(name: string, email: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Signup failed');
-  }
-
-  return response.json();
+  return parseResponse(response, 'Unable to create your account. Please try again.');
 }
 
 export async function login(email: string, password: string) {
@@ -21,50 +22,17 @@ export async function login(email: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Login failed');
-  }
-
-  return response.json();
+  return parseResponse(response, 'Unable to sign in. Please check your details.');
 }
 
 export async function getMe(token: string) {
   const response = await fetch(`${API_BASE_URL}/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-
-  if (!response.ok) {
-    throw new Error('Not authenticated');
-  }
-
-  return response.json();
+  return parseResponse(response, 'Your session has expired.');
 }
 
-export type Wallet = {
-  id: number;
-  user_id: number;
-  balance: number;
-  currency: string;
-  created_at: string;
-  updated_at?: string | null;
-};
-
-export async function getWallet(token: string): Promise<Wallet> {
-  const response = await fetch(`${API_BASE_URL}/wallet`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || 'Unable to load wallet');
-  }
-
-  return response.json();
-}
-
-export type ChatHistoryItem = { role: string; content: string };
+export type ChatHistoryItem = { role: 'user' | 'assistant'; content: string };
 
 export async function sendChatMessage(message: string, history: ChatHistoryItem[]) {
   const response = await fetch(`${API_BASE_URL}/chat`, {
@@ -72,25 +40,14 @@ export async function sendChatMessage(message: string, history: ChatHistoryItem[
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, history }),
   });
-
-  if (!response.ok) {
-    throw new Error('Chat request failed');
-  }
-
-  return response.json();
+  return parseResponse(response, 'Chat is temporarily unavailable.');
 }
 
-export async function submitContactForm(name: string, email: string, message: string, formType: string) {
+export async function submitContactForm(name: string, email: string, message: string, formType = 'contact') {
   const response = await fetch(`${API_BASE_URL}/contact`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, message, form_type: formType }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Submission failed');
-  }
-
-  return response.json();
+  return parseResponse(response, 'We could not send your message. Please try again.');
 }

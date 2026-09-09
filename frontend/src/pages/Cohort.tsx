@@ -1,0 +1,18 @@
+import { Link } from 'react-router-dom';
+import { ArrowRight, Database, GitBranch, Globe, Server, Sparkles } from 'lucide-react';
+
+const modules = [
+  ['Frontend Development', 'Build responsive interfaces with modern HTML, CSS, JavaScript and React workflows.'],
+  ['Backend Development', 'Create APIs, application logic and services with Python/FastAPI and clean architecture.'],
+  ['Databases', 'Work with relational data, SQL, PostgreSQL and practical database design.'],
+  ['Git & GitHub', 'Use version control, branches, pull requests and collaborative development habits.'],
+  ['Authentication & APIs', 'Build secure user flows and connect frontend applications to backend services.'],
+  ['Deployment & Projects', 'Ship complete applications and practice the workflow used in real development teams.'],
+];
+
+export default function Cohort() {
+ return <div><section className="relative overflow-hidden bg-slate-950 pt-32 text-white"><div className="absolute -right-40 top-10 h-[30rem] w-[30rem] rounded-full bg-red-600/20 blur-3xl" /><div className="relative mx-auto max-w-7xl px-5 pb-20 lg:px-8"><div className="max-w-4xl"><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-red-300"><Sparkles className="h-4 w-4" /> COHORT PROGRAM</div><h1 className="text-5xl font-black leading-tight sm:text-6xl">From foundations to <span className="text-red-400">full-stack development.</span></h1><p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">COHORT is our advanced program for students who already understand computers and are ready to learn how modern web applications are designed, developed and deployed.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link to="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 font-extrabold text-white hover:bg-red-700">Talk to admissions <ArrowRight className="h-4 w-4" /></Link><Link to="/cube" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-6 py-3.5 font-extrabold text-white hover:bg-white/5">See CUBE first</Link></div></div></div></section>
+ <section className="bg-white py-20"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{modules.map(([title, text], i) => <div key={title} className="rounded-2xl border border-slate-200 p-6 shadow-sm hover:-translate-y-1 hover:border-red-200 hover:shadow-lg"><div className="text-xs font-black tracking-[0.2em] text-red-600">0{i + 1}</div><h3 className="mt-4 text-xl font-extrabold text-slate-950">{title}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{text}</p></div>)}</div></div></section>
+ <section className="bg-red-50 py-20"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="max-w-2xl"><p className="eyebrow">What students build</p><h2 className="section-title">Learn by building, not just watching.</h2><p className="section-copy">COHORT is designed around practical development. Students work through complete application ideas and learn the habits needed to take a project from a blank folder to a deployed product.</p></div><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[[Globe, 'Interfaces'], [Server, 'APIs'], [Database, 'Data'], [GitBranch, 'Workflow']].map(([I, label]) => { const Icon = I as typeof Globe; return <div key={label as string} className="rounded-2xl bg-white p-6 shadow-sm"><Icon className="h-7 w-7 text-red-600" /><p className="mt-4 font-extrabold text-slate-950">{label as string}</p></div>; })}</div></div></section>
+ </div>;
+}

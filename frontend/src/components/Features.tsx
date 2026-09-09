@@ -63,7 +63,7 @@ export default function Features() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-300 text-sm font-semibold mb-4">
               Features
             </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight">
               Everything you need to
               <br />
               <span className="gradient-text">scale your business</span>
@@ -83,7 +83,7 @@ export default function Features() {
               delay={index * 100}
               duration={600}
             >
-              <div className="group relative bg-noir-900 rounded-2xl p-8 border border-white/5 hover:border-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-500 hover:-translate-y-2 card-shine">
+              <div className="group relative bg-noir-900 rounded-2xl p-8 border border-primary-500/10 hover:border-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-500 hover:-translate-y-2 card-shine">
                 <div className={`absolute inset-0 ${feature.bg} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
                 <div className="relative">

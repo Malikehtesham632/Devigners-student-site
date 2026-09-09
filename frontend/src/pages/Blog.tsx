@@ -45,7 +45,7 @@ export default function Blog() {
               <Reveal key={post.title} variant="fade-up" delay={index * 100} duration={600}>
                 <a
                   href="#"
-                  className="group block p-7 rounded-2xl border border-white/10 bg-noir-900 hover:border-primary-500/30 hover:shadow-lg hover:shadow-primary-500/10 transition-all h-full"
+                  className="group block p-7 rounded-2xl border border-primary-500/10 bg-noir-900 hover:border-primary-500/30 hover:shadow-lg hover:shadow-primary-500/10 transition-all h-full"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-bold uppercase tracking-wider text-primary-400">{post.tag}</span>

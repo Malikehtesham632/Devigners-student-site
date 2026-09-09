@@ -63,7 +63,7 @@ export default function Testimonials() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-300 text-sm font-semibold mb-4">
               Testimonials
             </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight">
               Loved by teams
               <span className="gradient-text"> everywhere</span>
             </h2>
@@ -81,7 +81,7 @@ export default function Testimonials() {
               delay={(index % 3) * 120}
               duration={600}
             >
-              <div className="group relative bg-noir-900 rounded-2xl p-7 border border-white/5 hover:border-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-500 hover:-translate-y-2 card-shine">
+              <div className="group relative bg-noir-900 rounded-2xl p-7 border border-primary-500/10 hover:border-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-500 hover:-translate-y-2 card-shine">
                 <Quote className="absolute top-6 right-6 w-10 h-10 text-white/5 group-hover:text-primary-500/20 group-hover:scale-110 transition-all duration-500" />
 
                 <div className="flex gap-1 mb-4 relative">

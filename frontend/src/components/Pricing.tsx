@@ -70,7 +70,7 @@ export default function Pricing() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-300 text-sm font-semibold mb-4">
               Pricing
             </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight">
               Simple, transparent
               <span className="gradient-text"> pricing</span>
             </h2>

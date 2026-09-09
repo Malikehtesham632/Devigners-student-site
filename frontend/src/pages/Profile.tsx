@@ -65,7 +65,7 @@ export default function Profile() {
             </div>
           </Reveal>
           <Reveal variant="fade-up" delay={100} duration={500}>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-1">Welcome back, {firstName}</h1>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-1">Welcome back, {firstName}</h1>
             <p className="text-white/60 text-sm">{user.email}</p>
           </Reveal>
         </div>

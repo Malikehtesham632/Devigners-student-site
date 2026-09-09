@@ -22,7 +22,7 @@ export default function PageHeader({ eyebrow, title, description, children }: Pa
           </span>
         </Reveal>
         <Reveal variant="fade-up" delay={100} duration={600}>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-5">{title}</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold tracking-tight mb-5">{title}</h1>
         </Reveal>
         <Reveal variant="fade-up" delay={200} duration={600}>
           <p className="text-white/60 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">{description}</p>

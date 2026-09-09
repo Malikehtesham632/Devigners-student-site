@@ -59,7 +59,7 @@ export default function Hero() {
               <Sparkles className="w-3.5 h-3.5 text-accent-400 animate-bounce-subtle" />
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05] tracking-tight animate-fade-in-up">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold text-white leading-[1.05] tracking-tight animate-fade-in-up">
               The platform that
               <br />
               <span className="text-gradient-animated">runs your business</span>

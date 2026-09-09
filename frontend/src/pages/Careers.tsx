@@ -25,7 +25,7 @@ export default function Careers() {
               <Reveal key={role.title} variant="fade-up" delay={index * 100} duration={500}>
                 <a
                   href="#"
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl border border-white/10 bg-noir-900 hover:border-primary-500/30 hover:shadow-md hover:shadow-primary-500/10 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl border border-primary-500/10 bg-noir-900 hover:border-primary-500/30 hover:shadow-md hover:shadow-primary-500/10 transition-all"
                 >
                   <div>
                     <h3 className="text-base font-bold text-white mb-1">{role.title}</h3>

@@ -24,7 +24,7 @@ export default function CTA() {
                 Get started in minutes
               </div>
 
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-white tracking-tight leading-[1.1]">
                 Ready to transform
                 <br />
                 <span className="text-gradient-animated">how you work?</span>

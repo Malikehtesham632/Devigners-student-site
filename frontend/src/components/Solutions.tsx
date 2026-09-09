@@ -42,7 +42,7 @@ export default function Solutions() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-secondary-500/10 border border-secondary-500/20 text-secondary-300 text-sm font-semibold mb-4">
               How it works
             </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight">
               Up and running in
               <span className="gradient-text"> four steps</span>
             </h2>

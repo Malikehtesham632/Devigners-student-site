@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from decimal import Decimal
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserSignup(BaseModel):
@@ -32,7 +32,7 @@ class Token(BaseModel):
 class WalletOut(BaseModel):
     id: int
     user_id: int
-    balance: Decimal
+    balance: float
     currency: str
     created_at: datetime
     updated_at: datetime | None = None

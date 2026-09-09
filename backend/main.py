@@ -1,16 +1,18 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
 from jose import JWTError
+from sqlalchemy.orm import Session
 
-import models
-import schemas
 import auth
-import notifications
 import chat
+import models
+import notifications
+import schemas
 from database import engine, get_db
 
+# Creates any missing tables, including the new wallets table.
+# Existing users/data are preserved.
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Nexus Backend")
@@ -20,6 +22,7 @@ app.add_middleware(
     allow_origins=[
         "https://nexus-brand-frontened.vercel.app",
         "https://nexus-brand-oall.vercel.app",
+        "https://nexus-brand-oall-git-master-devigners1.vercel.app",
         "https://nexus-brand-git-master-devigners1.vercel.app",
         "https://nexus-brand-o2zhzb7kd-devigners1.vercel.app",
     ],
@@ -31,11 +34,15 @@ app.add_middleware(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
     credentials_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
     )
+
     try:
         payload = auth.decode_access_token(token)
         email = payload.get("sub")
@@ -47,12 +54,18 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(models.User).filter(models.User.email == email).first()
     if user is None:
         raise credentials_error
+
     return user
 
 
 @app.post("/signup", response_model=schemas.UserOut)
 def signup(user_data: schemas.UserSignup, db: Session = Depends(get_db)):
-    existing_user = db.query(models.User).filter(models.User.email == user_data.email).first()
+    existing_user = (
+        db.query(models.User)
+        .filter(models.User.email == user_data.email)
+        .first()
+    )
+
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -64,7 +77,7 @@ def signup(user_data: schemas.UserSignup, db: Session = Depends(get_db)):
     db.add(new_user)
     db.flush()
 
-    # One-time, site-only welcome credit. No payment/withdrawal is involved.
+    # Give every newly registered user a one-time $60 site-only wallet balance.
     wallet = models.Wallet(
         user_id=new_user.id,
         balance=60.00,
@@ -80,7 +93,11 @@ def signup(user_data: schemas.UserSignup, db: Session = Depends(get_db)):
 @app.post("/login", response_model=schemas.Token)
 def login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == login_data.email).first()
-    if not user or not auth.verify_password(login_data.password, user.hashed_password):
+
+    if not user or not auth.verify_password(
+        login_data.password,
+        user.hashed_password,
+    ):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = auth.create_access_token({"sub": user.email})
@@ -97,11 +114,15 @@ def get_wallet(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    wallet = db.query(models.Wallet).filter(models.Wallet.user_id == current_user.id).first()
+    wallet = (
+        db.query(models.Wallet)
+        .filter(models.Wallet.user_id == current_user.id)
+        .first()
+    )
 
+    # Existing accounts created before the wallet feature get their welcome
+    # wallet the first time they open the Wallet page.
     if wallet is None:
-        # Backward compatibility for accounts created before the wallet feature.
-        # This creates the wallet only when the old account first opens Wallet.
         wallet = models.Wallet(
             user_id=current_user.id,
             balance=60.00,
@@ -115,7 +136,10 @@ def get_wallet(
 
 
 @app.post("/contact", response_model=schemas.ContactFormOut)
-def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(get_db)):
+def submit_contact_form(
+    form_data: schemas.ContactFormIn,
+    db: Session = Depends(get_db),
+):
     submission = models.ContactSubmission(
         name=form_data.name,
         email=form_data.email,
@@ -128,7 +152,10 @@ def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(
 
     try:
         notifications.send_contact_notification(
-            form_data.name, form_data.email, form_data.message, form_data.form_type
+            form_data.name,
+            form_data.email,
+            form_data.message,
+            form_data.form_type,
         )
     except Exception as error:
         print(f"Failed to send email notification: {error}")
@@ -138,7 +165,10 @@ def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(
 
 @app.post("/chat", response_model=schemas.ChatOut)
 def chat_with_ai(chat_data: schemas.ChatIn):
-    history = [{"role": item.role, "content": item.content} for item in chat_data.history]
+    history = [
+        {"role": item.role, "content": item.content}
+        for item in chat_data.history
+    ]
     reply = chat.get_ai_reply(chat_data.message, history)
     return {"reply": reply}
 

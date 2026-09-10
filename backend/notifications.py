@@ -20,40 +20,64 @@ def _send_email(message: EmailMessage) -> None:
         server.send_message(message)
 
 
-def send_admissions_notifications(name: str, email: str, message: str) -> None:
-    """Send both the student's confirmation and the institute's new-lead notification."""
-    if not NOTIFY_EMAIL:
-        raise RuntimeError("NOTIFY_EMAIL is required for admissions notifications")
-
-    student_message = EmailMessage()
-    student_message["From"] = SENDER_EMAIL
-    student_message["To"] = email
-    student_message["Reply-To"] = NOTIFY_EMAIL
-    student_message["Subject"] = "We received your Devigners request"
-    student_message.set_content(
+def _build_student_confirmation(name: str, email: str, message: str) -> EmailMessage:
+    email_message = EmailMessage()
+    email_message["From"] = SENDER_EMAIL
+    email_message["To"] = email
+    email_message["Reply-To"] = NOTIFY_EMAIL
+    email_message["Subject"] = "Your Devigners admission form has been received"
+    email_message.set_content(
         f"Hi {name},\n\n"
-        "Thank you for your interest in Devigners. We have received your admissions request.\n\n"
+        "Thank you for submitting your admission form to Devigners Learning Institute.\n\n"
+        "Your form has been successfully submitted and received by our team. "
+        "Our HR/admissions team will review your information and contact you regarding the next steps.\n\n"
+        "Submission details:\n"
         f"{message}\n\n"
-        "Our team will review your request and contact you as early as possible.\n\n"
+        "Please keep this email for your records. There is no need to submit the form again.\n\n"
         "Regards,\n"
         "Devigners Team\n"
-        "IT Learning Institute\n"
+        "Devigners Learning Institute\n"
     )
+    return email_message
 
-    admin_message = EmailMessage()
-    admin_message["From"] = SENDER_EMAIL
-    admin_message["To"] = NOTIFY_EMAIL
-    admin_message["Reply-To"] = email
-    admin_message["Subject"] = f"New Devigners admissions request — {name}"
-    admin_message.set_content(
-        "A new admissions request was submitted on the Devigners website.\n\n"
+
+def _build_admin_notification(name: str, email: str, message: str) -> EmailMessage:
+    email_message = EmailMessage()
+    email_message["From"] = SENDER_EMAIL
+    email_message["To"] = NOTIFY_EMAIL
+    email_message["Reply-To"] = email
+    email_message["Subject"] = f"New admission form — {name}"
+    email_message.set_content(
+        "A new admission form has been submitted on the Devigners website.\n\n"
         f"Student name: {name}\n"
         f"Student email: {email}\n\n"
-        f"Request details:\n{message}\n"
+        "Form details:\n"
+        f"{message}\n\n"
+        "Please review the submission and contact the student if follow-up is required.\n"
     )
+    return email_message
 
-    _send_email(student_message)
-    _send_email(admin_message)
+
+def send_admissions_notifications(name: str, email: str, message: str) -> None:
+    """Send confirmation to the student and a new-submission alert to HR/admin."""
+    if not NOTIFY_EMAIL:
+        raise RuntimeError("NOTIFY_EMAIL is required for admissions notifications")
+    if not SENDER_EMAIL or not SENDER_APP_PASSWORD:
+        raise RuntimeError("SENDER_EMAIL and SENDER_APP_PASSWORD are required for email delivery")
+
+    # Send each message independently so one failed recipient does not prevent
+    # the other notification from being attempted.
+    try:
+        _send_email(_build_student_confirmation(name, email, message))
+        print(f"Admission confirmation email sent to {email}")
+    except Exception as error:
+        print(f"Failed to send student confirmation to {email}: {error}")
+
+    try:
+        _send_email(_build_admin_notification(name, email, message))
+        print(f"Admission notification sent to HR: {NOTIFY_EMAIL}")
+    except Exception as error:
+        print(f"Failed to send HR admission notification: {error}")
 
 
 def send_contact_notification(name, email, message, form_type):

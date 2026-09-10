@@ -55,7 +55,7 @@ def main():
         for err in result["errors"]:
             print(f"  - {err}")
     else:
-        print("\n✓ Both emails were generated and sent successfully!")
+        print("\n[OK] Both emails were generated and sent successfully!")
 
 if __name__ == "__main__":
     main()

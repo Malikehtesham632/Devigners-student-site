@@ -23,10 +23,12 @@ except ImportError:
 
 def get_email_config() -> dict:
     """Dynamically get email configuration from environment variables."""
+    raw_password = os.getenv("SENDER_APP_PASSWORD", "").strip()
+    clean_password = raw_password.replace(" ", "").replace("-", "")
     return {
         "notify_email": os.getenv("NOTIFY_EMAIL", "").strip(),
         "sender_email": os.getenv("SENDER_EMAIL", "").strip(),
-        "sender_password": os.getenv("SENDER_APP_PASSWORD", "").strip(),
+        "sender_password": clean_password,
         "smtp_server": os.getenv("SMTP_SERVER", "smtp.gmail.com").strip(),
         "smtp_port": int(os.getenv("SMTP_PORT", "587")),
     }
@@ -372,10 +374,10 @@ def send_admissions_notifications(
         )
         _send_email(student_msg, config)
         status["student_email"] = True
-        print(f"[Notifications] ✓ Confirmation email successfully sent to student: {email}")
+        print(f"[Notifications] [OK] Confirmation email successfully sent to student: {email}")
     except Exception as error:
         err_msg = f"Failed to send confirmation email to student ({email}): {error}"
-        print(f"[Notifications] ✗ {err_msg}")
+        print(f"[Notifications] [FAIL] {err_msg}")
         status["errors"].append(err_msg)
 
     # 2. Send HR / Admin Notification Email
@@ -391,14 +393,14 @@ def send_admissions_notifications(
             )
             _send_email(admin_msg, config)
             status["admin_email"] = True
-            print(f"[Notifications] ✓ Admission alert sent to HR/Admin: {notify_email}")
+            print(f"[Notifications] [OK] Admission alert sent to HR/Admin: {notify_email}")
         except Exception as error:
             err_msg = f"Failed to send admission alert to HR/Admin ({notify_email}): {error}"
-            print(f"[Notifications] ✗ {err_msg}")
+            print(f"[Notifications] [FAIL] {err_msg}")
             status["errors"].append(err_msg)
     else:
         err_msg = "HR alert skipped: NOTIFY_EMAIL is not set"
-        print(f"[Notifications] ! {err_msg}")
+        print(f"[Notifications] [SKIP] {err_msg}")
         status["errors"].append(err_msg)
 
     return status
@@ -433,10 +435,10 @@ def send_contact_notification(name: str, email: str, message: str, form_type: st
         )
         _send_email(email_message, config)
         status["admin_email"] = True
-        print(f"[Notifications] ✓ Contact notification sent to HR: {notify_email}")
+        print(f"[Notifications] [OK] Contact notification sent to HR: {notify_email}")
     except Exception as error:
         err = f"Failed to send contact notification: {error}"
-        print(f"[Notifications] ✗ {err}")
+        print(f"[Notifications] [FAIL] {err}")
         status["errors"].append(err)
 
     return status

@@ -171,9 +171,9 @@ def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(
 
 
 @app.post("/chat", response_model=schemas.ChatOut)
-def chat_with_ai(chat_data: schemas.ChatIn):
+async def chat_with_ai(chat_data: schemas.ChatIn):
     history = [{"role": item.role, "content": item.content} for item in chat_data.history]
-    reply = chat.get_ai_reply(chat_data.message, history)
+    reply = await chat.get_ai_reply(chat_data.message, history)
     return {"reply": reply}
 
 

@@ -1,5 +1,6 @@
 import os
-import requests
+
+import httpx
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent"
@@ -14,13 +15,17 @@ BUSINESS_CONTEXT = (
     "If the visitor asks for information you do not know, suggest the admissions contact form."
 )
 
+# Avoid sending an unnecessarily large conversation on every request.
+MAX_HISTORY_ITEMS = 8
 
-def get_ai_reply(user_message, conversation_history):
+
+async def get_ai_reply(user_message: str, conversation_history: list[dict]) -> str:
     if not GEMINI_API_KEY:
         return "Our chat assistant is not fully set up yet. Please use the contact form and we will get back to you."
 
+    recent_history = conversation_history[-MAX_HISTORY_ITEMS:]
     contents = []
-    for item in conversation_history:
+    for item in recent_history:
         role = "model" if item["role"] == "assistant" else "user"
         contents.append({"role": role, "parts": [{"text": item["content"]}]})
     contents.append({"role": "user", "parts": [{"text": user_message}]})
@@ -31,19 +36,22 @@ def get_ai_reply(user_message, conversation_history):
     }
 
     try:
-        response = requests.post(
-            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-            json=payload,
-            timeout=30,
-        )
-    except requests.RequestException as error:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            response = await client.post(
+                f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+                json=payload,
+            )
+    except httpx.RequestError as error:
         print(f"Gemini API request failed: {error}")
         return "Sorry, our chat assistant is temporarily unavailable. Please try again shortly."
 
     try:
         data = response.json()
     except ValueError:
-        print(f"Gemini API returned non-JSON (status {response.status_code}): {response.text[:300]}")
+        print(
+            f"Gemini API returned non-JSON (status {response.status_code}): "
+            f"{response.text[:300]}"
+        )
         return "Sorry, something went wrong. Please try again in a moment."
 
     try:

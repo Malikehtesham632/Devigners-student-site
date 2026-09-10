@@ -9,7 +9,7 @@
  */
 
 const SHEET_NAME = 'Admissions';
-const WEBHOOK_SECRET = 'CHANGE_THIS_TO_A_LONG_RANDOM_SECRET';
+const WEBHOOK_SECRET = 'hdvigfierifbreigierrhjbnkjnkj';
 
 function doPost(e) {
   try {

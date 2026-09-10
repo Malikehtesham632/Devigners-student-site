@@ -35,6 +35,7 @@ import schemas
 
 models.Base.metadata.create_all(bind=engine)
 
+
 app = FastAPI(title="Devigners Learning Institute API")
 
 app.add_middleware(
@@ -42,6 +43,7 @@ app.add_middleware(
     allow_origins=[
         "https://devigners.net",
         "https://www.devigners.net",
+        "https://devigners-student-site.vercel.app",
         "https://nexus-brand-frontened.vercel.app",
         "https://nexus-brand-oall.vercel.app",
         "https://nexus-brand-git-master-devigners1.vercel.app",
@@ -55,6 +57,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 

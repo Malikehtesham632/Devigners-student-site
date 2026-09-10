@@ -89,11 +89,15 @@ def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 
-def _send_to_google_sheet(name: str, email: str, program: str, class_mode: str) -> None:
+def _send_to_google_sheet(name: str, email: str, program: str, class_mode: str, message: str) -> None:
     webhook_url = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
     webhook_secret = os.getenv("GOOGLE_SHEETS_WEBHOOK_SECRET", "").strip()
+    notify_email = os.getenv("NOTIFY_EMAIL", "").strip()
+
     if not webhook_url or not webhook_secret:
         raise RuntimeError("Google Sheets integration is not configured")
+    if not notify_email:
+        raise RuntimeError("NOTIFY_EMAIL is required for admissions notifications")
 
     payload = json.dumps({
         "secret": webhook_secret,
@@ -101,6 +105,8 @@ def _send_to_google_sheet(name: str, email: str, program: str, class_mode: str) 
         "email": email,
         "program": program,
         "class_mode": class_mode,
+        "message": message,
+        "notify_email": notify_email,
     }).encode("utf-8")
     request = urllib.request.Request(
         webhook_url,
@@ -132,19 +138,14 @@ def _parse_admission_details(message: str) -> tuple[str, str]:
 
 
 def _process_admission_submission(name: str, email: str, message: str) -> None:
-    """Run Google Sheets + email delivery after the form has been saved."""
+    """Run the complete admissions workflow after the form has been saved."""
     program, class_mode = _parse_admission_details(message)
 
     try:
-        _send_to_google_sheet(name, email, program, class_mode)
-        print(f"Admission added to Google Sheet: {email}")
+        _send_to_google_sheet(name, email, program, class_mode, message)
+        print(f"Admission saved to Google Sheet and email workflow completed: {email}")
     except Exception as error:
-        print(f"Failed to add admission to Google Sheet: {error}")
-
-    try:
-        notifications.send_admissions_notifications(name, email, message)
-    except Exception as error:
-        print(f"Admission email workflow failed: {error}")
+        print(f"Failed to complete admission workflow: {error}")
 
 
 @app.post("/contact", response_model=schemas.ContactFormOut)

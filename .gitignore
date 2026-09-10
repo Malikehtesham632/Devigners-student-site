@@ -3,10 +3,17 @@ __pycache__/
 node_modules/
 dist/
 build/
+
+# Environment files — keep only the example template
 .env
-.env.*
-!.env.example
-nexus-backend/nexus.db
+.env.local
+.env.production
+.env.development
+
+# Database files — never commit SQLite DBs
+*.db
+*.sqlite
+*.sqlite3
 
 # SSH Keys and secrets
 Yes

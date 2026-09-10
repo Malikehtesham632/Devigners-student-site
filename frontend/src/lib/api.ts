@@ -4,6 +4,7 @@ async function parseResponse(response: Response, fallback: string) {
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json().catch(() => null) : null;
   if (!response.ok) throw new Error(data?.detail || fallback);
+  if (data === null) throw new Error(fallback);
   return data;
 }
 

@@ -30,15 +30,24 @@ def get_ai_reply(user_message, conversation_history):
         "contents": contents,
     }
 
-    response = requests.post(
-        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-        json=payload,
-        timeout=30,
-    )
-    data = response.json()
+    try:
+        response = requests.post(
+            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+            json=payload,
+            timeout=30,
+        )
+    except requests.RequestException as error:
+        print(f"Gemini API request failed: {error}")
+        return "Sorry, our chat assistant is temporarily unavailable. Please try again shortly."
 
-    if "candidates" not in data:
-        print(f"Gemini API error (status {response.status_code}): {data}")
+    try:
+        data = response.json()
+    except ValueError:
+        print(f"Gemini API returned non-JSON (status {response.status_code}): {response.text[:300]}")
         return "Sorry, something went wrong. Please try again in a moment."
 
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+    try:
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError, TypeError):
+        print(f"Gemini API unexpected response shape (status {response.status_code}): {data}")
+        return "Sorry, I couldn't generate a response to that. Could you try rephrasing your question?"

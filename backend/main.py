@@ -232,18 +232,29 @@ async def chat_with_ai(chat_data: schemas.ChatIn):
 
 @app.get("/health")
 def health_check():
-    config = notifications.get_email_config()
+    """Return a safe deployment health/status report without exposing credentials."""
+    try:
+        config = notifications.get_email_config()
+        email_configured = bool(config.get("sender_email") and config.get("sender_password"))
+        smtp_server = config.get("smtp_server") or "smtp.gmail.com"
+        smtp_port = config.get("smtp_port") or 587
+    except (ValueError, TypeError, KeyError):
+        email_configured = False
+        smtp_server = "configured incorrectly"
+        smtp_port = None
+
     sheets_url = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
     sheets_secret = os.getenv("GOOGLE_SHEETS_WEBHOOK_SECRET", "").strip()
+    notify_email_configured = bool(os.getenv("NOTIFY_EMAIL", "").strip())
 
     return {
         "status": "healthy",
+        "service": "Devigners Learning Institute API",
         "email_service": {
-            "configured": bool(config["sender_email"] and config["sender_password"]),
-            "sender_email": config["sender_email"] if config["sender_email"] else "not set",
-            "notify_email": config["notify_email"] if config["notify_email"] else "not set",
-            "smtp_server": config["smtp_server"],
-            "smtp_port": config["smtp_port"],
+            "configured": email_configured,
+            "notify_email_configured": notify_email_configured,
+            "smtp_server": smtp_server,
+            "smtp_port": smtp_port,
         },
         "google_sheets": {
             "configured": bool(sheets_url and sheets_secret),

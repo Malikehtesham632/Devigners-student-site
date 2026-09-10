@@ -1,19 +1,37 @@
-from fastapi import BackgroundTasks, FastAPI, Depends, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-from jose import JWTError
-
-import models
-import schemas
-import auth
-import notifications
-import chat
+import json
 import os
 import urllib.error
 import urllib.request
-import json
+from pathlib import Path
+from typing import Optional
+
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError
+from sqlalchemy.orm import Session
+
+# Load environment variables from .env if present
+try:
+    from dotenv import load_dotenv
+
+    backend_dir = Path(__file__).resolve().parent
+    project_root = backend_dir.parent
+    if (project_root / ".env").exists():
+        load_dotenv(project_root / ".env")
+    elif (backend_dir / ".env").exists():
+        load_dotenv(backend_dir / ".env")
+    else:
+        load_dotenv()
+except ImportError:
+    pass
+
+import auth
+import chat
 from database import engine, get_db
+import models
+import notifications
+import schemas
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -28,6 +46,9 @@ app.add_middleware(
         "https://nexus-brand-oall.vercel.app",
         "https://nexus-brand-git-master-devigners1.vercel.app",
         "https://nexus-brand-o2zhzb7kd-devigners1.vercel.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
     ],
     allow_origin_regex=r"https://[a-zA-Z0-9-]+\.vercel\.app",
     allow_credentials=True,
@@ -138,14 +159,31 @@ def _parse_admission_details(message: str) -> tuple[str, str]:
 
 
 def _process_admission_submission(name: str, email: str, message: str) -> None:
-    """Run the complete admissions workflow after the form has been saved."""
+    """Run the complete admissions workflow: Send student confirmation email,
+
+    send HR alert email, and append to Google Sheets if configured.
+    """
     program, class_mode = _parse_admission_details(message)
 
+    # 1. Send direct email notifications (Student confirmation + HR notification)
+    try:
+        status_report = notifications.send_admissions_notifications(
+            name=name,
+            email=email,
+            message=message,
+            program=program,
+            class_mode=class_mode,
+        )
+        print(f"[Admissions Workflow] Email dispatch status for {email}: {status_report}")
+    except Exception as error:
+        print(f"[Admissions Workflow] Error dispatching emails for {email}: {error}")
+
+    # 2. Append to Google Sheets if webhook is configured
     try:
         _send_to_google_sheet(name, email, program, class_mode, message)
-        print(f"Admission saved to Google Sheet and email workflow completed: {email}")
+        print(f"[Admissions Workflow] Saved to Google Sheet: {email}")
     except Exception as error:
-        print(f"Failed to complete admission workflow: {error}")
+        print(f"[Admissions Workflow] Google Sheets notice: {error}")
 
 
 @app.post("/contact", response_model=schemas.ContactFormOut)
@@ -177,7 +215,7 @@ def submit_contact_form(
                 form_data.name, form_data.email, form_data.message, form_data.form_type
             )
         except Exception as error:
-            print(f"Failed to send email notification: {error}")
+            print(f"[Contact] Failed to send email notification: {error}")
 
     return submission
 
@@ -187,6 +225,53 @@ async def chat_with_ai(chat_data: schemas.ChatIn):
     history = [{"role": item.role, "content": item.content} for item in chat_data.history]
     reply = await chat.get_ai_reply(chat_data.message, history)
     return {"reply": reply}
+
+
+@app.get("/health")
+def health_check():
+    config = notifications.get_email_config()
+    sheets_url = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
+    sheets_secret = os.getenv("GOOGLE_SHEETS_WEBHOOK_SECRET", "").strip()
+
+    return {
+        "status": "healthy",
+        "email_service": {
+            "configured": bool(config["sender_email"] and config["sender_password"]),
+            "sender_email": config["sender_email"] if config["sender_email"] else "not set",
+            "notify_email": config["notify_email"] if config["notify_email"] else "not set",
+            "smtp_server": config["smtp_server"],
+            "smtp_port": config["smtp_port"],
+        },
+        "google_sheets": {
+            "configured": bool(sheets_url and sheets_secret),
+        },
+    }
+
+
+@app.post("/test-email")
+def test_email(email_to: Optional[str] = None):
+    """Diagnostic endpoint to send a test admission workflow email."""
+    config = notifications.get_email_config()
+    target = email_to or config["notify_email"] or config["sender_email"]
+    if not target:
+        raise HTTPException(
+            status_code=400,
+            detail="No recipient specified and neither NOTIFY_EMAIL nor SENDER_EMAIL is set.",
+        )
+
+    result = notifications.send_admissions_notifications(
+        name="Test Student",
+        email=target,
+        message="Program of interest: CUBE\nPreferred class format: Online classes\n\nThis is a test submission from /test-email.",
+        program="CUBE",
+        class_mode="Online classes",
+    )
+
+    return {
+        "status": "Test execution finished",
+        "recipient": target,
+        "results": result,
+    }
 
 
 @app.get("/")

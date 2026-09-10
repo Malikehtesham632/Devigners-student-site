@@ -52,3 +52,15 @@ export async function submitContactForm(name: string, email: string, message: st
   });
   return parseResponse(response, 'We could not send your message. Please try again.');
 }
+
+export type Wallet = {
+  balance: number;
+  currency: string;
+};
+
+export async function getWallet(token: string): Promise<Wallet> {
+  const response = await fetch(`${API_BASE_URL}/wallet`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseResponse(response, 'Unable to load wallet data.');
+}

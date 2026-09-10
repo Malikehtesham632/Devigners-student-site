@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import BackgroundTasks, FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -131,8 +131,28 @@ def _parse_admission_details(message: str) -> tuple[str, str]:
     return program, class_mode
 
 
+def _process_admission_submission(name: str, email: str, message: str) -> None:
+    """Run Google Sheets + email delivery after the form has been saved."""
+    program, class_mode = _parse_admission_details(message)
+
+    try:
+        _send_to_google_sheet(name, email, program, class_mode)
+        print(f"Admission added to Google Sheet: {email}")
+    except Exception as error:
+        print(f"Failed to add admission to Google Sheet: {error}")
+
+    try:
+        notifications.send_admissions_notifications(name, email, message)
+    except Exception as error:
+        print(f"Admission email workflow failed: {error}")
+
+
 @app.post("/contact", response_model=schemas.ContactFormOut)
-def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(get_db)):
+def submit_contact_form(
+    form_data: schemas.ContactFormIn,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     submission = models.ContactSubmission(
         name=form_data.name,
         email=form_data.email,
@@ -144,21 +164,12 @@ def submit_contact_form(form_data: schemas.ContactFormIn, db: Session = Depends(
     db.refresh(submission)
 
     if form_data.form_type == "admissions":
-        program, class_mode = _parse_admission_details(form_data.message)
-        try:
-            _send_to_google_sheet(form_data.name, form_data.email, program, class_mode)
-            notifications.send_admissions_notifications(
-                form_data.name, form_data.email, form_data.message
-            )
-        except Exception as error:
-            print(f"Admissions delivery failed: {error}")
-            raise HTTPException(
-                status_code=502,
-                detail=(
-                    "Your request was saved, but we could not complete the admissions notification. "
-                    "Please try submitting again or contact Devigners directly."
-                ),
-            ) from error
+        background_tasks.add_task(
+            _process_admission_submission,
+            form_data.name,
+            form_data.email,
+            form_data.message,
+        )
     else:
         try:
             notifications.send_contact_notification(
